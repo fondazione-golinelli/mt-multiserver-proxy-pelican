@@ -44,6 +44,8 @@ An egg configuration file is included in this repo: [egg-mt-multiserver-proxy.js
 
 The egg points the server startup command at `/home/container/mt-multiserver-proxy`. By default, the entrypoint now renders `config.json` from Pelican environment variables on each boot. Set `PROXY_MANAGE_CONFIG=false` if you want to maintain `config.json` manually.
 
+If Pelican creates a server without an allocation and injects `SERVER_PORT=0`, the entrypoint normalizes that back to the default internal bind port (`40000`) instead of allowing the proxy to bind a random ephemeral port.
+
 ## Automatic builds
 
 A GitHub Action checks daily for a new upstream commit on `HimbeerserverDE/mt-multiserver-proxy:main`. When the commit changes, the image is rebuilt and pushed to GHCR. You can also trigger the workflow manually.

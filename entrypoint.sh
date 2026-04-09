@@ -23,7 +23,7 @@ int_or_default() {
 	fallback="$2"
 
 	case "$value" in
-		'')
+		''|0)
 			printf '%s' "$fallback"
 			;;
 		*[!0-9]*)
