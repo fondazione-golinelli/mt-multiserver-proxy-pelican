@@ -16,26 +16,40 @@
     ],
     "features": null,
     "docker_images": {
-        "Pelican Proxy": "ghcr.io/fondazione-golinelli/mt-multiserver-proxy-server:latest"
+        "Pelican Proxy": "ghcr.io/fondazione-golinelli/mt-multiserver-proxy-pelican:latest"
     },
     "file_denylist": [],
     "startup_commands": {
         "Default": "/home/container/mt-multiserver-proxy"
     },
     "config": {
-        "files": "{\n    \"config.json\": {\n        \"parser\": \"file\",\n        \"find\": {\n            \"__BIND_ADDR__\": \":{{server.allocations.default.port}}\",\n            \"__AUTH_BACKEND__\": \"{{server.environment.PROXY_AUTH_BACKEND}}\",\n            \"__AUTH_POSTGRES_CONN__\": \"{{server.environment.PROXY_AUTH_POSTGRES_CONN}}\",\n            \"__REQUIRE_PASSWD__\": \"{{server.environment.PROXY_REQUIRE_PASSWD}}\",\n            \"__DEFAULT_SERVER__\": \"{{server.environment.PROXY_DEFAULT_SERVER}}\",\n            \"__SERVER_SELECTOR__\": \"{{server.environment.PROXY_SERVER_SELECTOR}}\",\n            \"__NO_AUTO_PLUGINS__\": \"{{server.environment.PROXY_NO_AUTO_PLUGINS}}\",\n            \"__NO_PLUGINS__\": \"{{server.environment.PROXY_NO_PLUGINS}}\",\n            \"__USER_LIMIT__\": \"{{server.environment.PROXY_USER_LIMIT}}\",\n            \"__STATIC_SERVER_NAME__\": \"{{server.environment.PROXY_STATIC_SERVER_NAME}}\",\n            \"__STATIC_SERVER_ADDR__\": \"{{server.environment.PROXY_STATIC_SERVER_ADDR}}\",\n            \"__STATIC_MEDIA_POOL__\": \"{{server.environment.PROXY_STATIC_MEDIA_POOL}}\",\n            \"__STATIC_FALLBACK__\": \"{{server.environment.PROXY_STATIC_FALLBACK}}\",\n            \"__LIST_ENABLE__\": \"{{server.environment.PROXY_LIST_ENABLE}}\",\n            \"__LIST_NAME__\": \"{{server.environment.PROXY_LIST_NAME}}\",\n            \"__LIST_DESC__\": \"{{server.environment.PROXY_LIST_DESC}}\",\n            \"__LIST_URL__\": \"{{server.environment.PROXY_LIST_URL}}\"\n        }\n    }\n}",
+        "files": "{}",
         "startup": "{\n    \"done\": \"listen \"\n}",
         "logs": "{}",
         "stop": "^term"
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/bash\nset -eu\n\nmkdir -p /mnt/server/plugins /mnt/server/auth /mnt/server/ban /mnt/server/cache\n\nif [ ! -f /mnt/server/config.json ]; then\ncat > /mnt/server/config.json <<'JSON'\n{\n  \"BindAddr\": \"__BIND_ADDR__\",\n  \"AuthBackend\": \"__AUTH_BACKEND__\",\n  \"AuthPostgresConn\": \"__AUTH_POSTGRES_CONN__\",\n  \"RequirePasswd\": __REQUIRE_PASSWD__,\n  \"DefaultSrv\": \"__DEFAULT_SERVER__\",\n  \"SrvSelector\": \"__SERVER_SELECTOR__\",\n  \"NoAutoPlugins\": __NO_AUTO_PLUGINS__,\n  \"NoPlugins\": __NO_PLUGINS__,\n  \"UserLimit\": __USER_LIMIT__,\n  \"Servers\": {\n    \"__STATIC_SERVER_NAME__\": {\n      \"Addr\": \"__STATIC_SERVER_ADDR__\",\n      \"MediaPool\": \"__STATIC_MEDIA_POOL__\",\n      \"Fallback\": \"__STATIC_FALLBACK__\",\n      \"Groups\": []\n    }\n  },\n  \"List\": {\n    \"Enable\": __LIST_ENABLE__,\n    \"Addr\": \"https://servers.luanti.org\",\n    \"Interval\": 300,\n    \"Name\": \"__LIST_NAME__\",\n    \"Desc\": \"__LIST_DESC__\",\n    \"URL\": \"__LIST_URL__\",\n    \"Creative\": false,\n    \"Dmg\": true,\n    \"PvP\": false,\n    \"Game\": \"luanti\",\n    \"FarNames\": true,\n    \"Mods\": []\n  }\n}\nJSON\nfi\n\n: > /mnt/server/latest.log\n\necho \"Installation was successfully completed!\"\n",
+            "script": "#!/bin/bash\nset -eu\n\nmkdir -p /mnt/server/plugins /mnt/server/auth /mnt/server/ban /mnt/server/cache\n\nif [ -f /mnt/server/config.json ] && grep -Eq '__[A-Z0-9_]+__' /mnt/server/config.json; then\n  rm -f /mnt/server/config.json\nfi\n\n: > /mnt/server/latest.log\n\necho \"Installation was successfully completed!\"\n",
             "container": "ghcr.io/parkervcp/installers:debian",
             "entrypoint": "bash"
         }
     },
     "variables": [
+        {
+            "name": "Manage config automatically",
+            "description": "When true, the container rewrites config.json from Pelican variables on every boot. Disable this only if you want to maintain config.json manually.",
+            "env_variable": "PROXY_MANAGE_CONFIG",
+            "default_value": "true",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ],
+            "sort": 0
+        },
         {
             "name": "Auth backend",
             "description": "Authentication backend used by the proxy. Use files unless you specifically need Minetest-compatible DB storage.",

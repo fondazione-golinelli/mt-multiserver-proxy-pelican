@@ -15,7 +15,7 @@ RUN mkdir -p "$GOBIN" && \
 FROM $GO_IMAGE AS runtime
 
 RUN apt-get update && \
-	apt-get install -y --no-install-recommends tini gosu ca-certificates git && \
+	apt-get install -y --no-install-recommends tini gosu ca-certificates git jq && \
 	rm -rf /var/lib/apt/lists/* && \
 	useradd -m -d /home/container -u 1000 container && \
 	chown -R container:container /home/container

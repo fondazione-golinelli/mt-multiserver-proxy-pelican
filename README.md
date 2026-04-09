@@ -21,7 +21,7 @@ This image solves that by:
 ## Image
 
 ```text
-ghcr.io/fondazione-golinelli/mt-multiserver-proxy-server:latest
+ghcr.io/fondazione-golinelli/mt-multiserver-proxy-pelican:latest
 ```
 
 If your repository or package name differs, update:
@@ -42,7 +42,7 @@ Because upstream does not publish GitHub releases for this project, the workflow
 
 An egg configuration file is included in this repo: [egg-mt-multiserver-proxy.json](egg-mt-multiserver-proxy.json)
 
-The egg bootstraps a minimal `config.json` and points the server startup command at `/home/container/mt-multiserver-proxy`.
+The egg points the server startup command at `/home/container/mt-multiserver-proxy`. By default, the entrypoint now renders `config.json` from Pelican environment variables on each boot. Set `PROXY_MANAGE_CONFIG=false` if you want to maintain `config.json` manually.
 
 ## Automatic builds
 
