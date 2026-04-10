@@ -2,15 +2,25 @@
 # check=error=true
 
 ARG GO_IMAGE=golang:1.25.6-bookworm
+ARG MT_MULTISERVER_PROXY_REPO=fondazione-golinelli/mt-multiserver-proxy
 ARG MT_MULTISERVER_PROXY_VERSION=main
 
 FROM $GO_IMAGE AS builder
 
+ARG MT_MULTISERVER_PROXY_REPO
 ARG MT_MULTISERVER_PROXY_VERSION
 ENV GOBIN=/opt/mt-multiserver-proxy
 
-RUN mkdir -p "$GOBIN" && \
-	go install github.com/HimbeerserverDE/mt-multiserver-proxy/cmd/...@${MT_MULTISERVER_PROXY_VERSION}
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends ca-certificates curl && \
+	rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p "$GOBIN" /tmp/mt-multiserver-proxy && \
+	curl -fsSL "https://codeload.github.com/${MT_MULTISERVER_PROXY_REPO}/tar.gz/${MT_MULTISERVER_PROXY_VERSION}" \
+		-o /tmp/mt-multiserver-proxy/source.tar.gz && \
+	tar -xzf /tmp/mt-multiserver-proxy/source.tar.gz -C /tmp/mt-multiserver-proxy --strip-components=1 && \
+	cd /tmp/mt-multiserver-proxy && \
+	go install ./cmd/...
 
 FROM $GO_IMAGE AS runtime
 

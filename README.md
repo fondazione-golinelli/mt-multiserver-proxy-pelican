@@ -1,10 +1,10 @@
 # mt-multiserver-proxy Server for Pelican Panel
 
-A custom [mt-multiserver-proxy](https://github.com/HimbeerserverDE/mt-multiserver-proxy) Docker image built for use with the [Pelican](https://pelican.dev/) game server panel.
+A custom [mt-multiserver-proxy](https://github.com/fondazione-golinelli/mt-multiserver-proxy) Docker image built for use with the [Pelican](https://pelican.dev/) game server panel.
 
 ## Why does this exist?
 
-The upstream proxy image is not a great fit for Pelican as-is:
+The maintained proxy image source is not a great fit for Pelican as-is:
 
 1. Pelican passes startup commands through the `STARTUP` environment variable, so we want the same startup-aware entrypoint behavior used by Pelican yolks.
 2. `mt-multiserver-proxy` stores `config.json`, `latest.log`, `plugins`, `auth`, `ban`, and `cache` next to the running executable. Under Pelican, the writable server volume is `/home/container`, while the image filesystem is effectively immutable for server state.
@@ -12,7 +12,7 @@ The upstream proxy image is not a great fit for Pelican as-is:
 
 This image solves that by:
 
-- building the upstream proxy binaries from source
+- building the proxy binaries from source
 - keeping the Go toolchain in the runtime image
 - copying `mt-multiserver-proxy`, `mt-auth-convert`, and `mt-build-plugin` into `/home/container` at startup
 - running the proxy from `/home/container`, so all proxy-managed state lands on the writable Pelican volume
@@ -31,7 +31,7 @@ If your repository or package name differs, update:
 
 ## Tags
 
-Because upstream does not publish GitHub releases for this project, the workflow watches the upstream `main` branch and publishes:
+Because the source repository does not publish GitHub releases for this project, the workflow watches the tracked `main` branch and publishes:
 
 - `latest`
 - `main`
@@ -52,7 +52,7 @@ If Pelican creates a server without an allocation and injects `SERVER_PORT=0`, t
 
 ## Automatic builds
 
-A GitHub Action checks daily for a new upstream commit on `HimbeerserverDE/mt-multiserver-proxy:main`. When the commit changes, the image is rebuilt and pushed to GHCR. You can also trigger the workflow manually.
+A GitHub Action checks daily for a new commit on `fondazione-golinelli/mt-multiserver-proxy:main`. When the commit changes, the image is rebuilt and pushed to GHCR. You can also trigger the workflow manually.
 
 ## Notes for your setup
 

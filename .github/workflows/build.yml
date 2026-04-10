@@ -13,7 +13,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  UPSTREAM_REPO: HimbeerserverDE/mt-multiserver-proxy
+  UPSTREAM_REPO: fondazione-golinelli/mt-multiserver-proxy
 
 jobs:
   check:
@@ -77,6 +77,7 @@ jobs:
           context: .
           push: true
           build-args: |
+            MT_MULTISERVER_PROXY_REPO=${{ env.UPSTREAM_REPO }}
             MT_MULTISERVER_PROXY_VERSION=${{ needs.check.outputs.upstream_sha }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
