@@ -44,6 +44,11 @@ copy_runtime_binaries() {
 	done
 
 	mkdir -p /home/container/plugins /home/container/auth /home/container/ban /home/container/cache
+	if [ -f /usr/local/mt-multiserver-proxy/plugins/pelicanbridge.so ]; then
+		install -m 0644 \
+			/usr/local/mt-multiserver-proxy/plugins/pelicanbridge.so \
+			/home/container/plugins/pelicanbridge.so
+	fi
 	: > /home/container/latest.log
 
 	if [ "$(id -u)" -eq 0 ]; then
@@ -56,7 +61,8 @@ copy_runtime_binaries() {
 			/home/container/latest.log \
 			/home/container/mt-multiserver-proxy \
 			/home/container/mt-auth-convert \
-			/home/container/mt-build-plugin 2>/dev/null || true
+			/home/container/mt-build-plugin \
+			/home/container/plugins/pelicanbridge.so 2>/dev/null || true
 	fi
 }
 

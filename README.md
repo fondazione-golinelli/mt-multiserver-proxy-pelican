@@ -13,8 +13,10 @@ The maintained proxy image source is not a great fit for Pelican as-is:
 This image solves that by:
 
 - building the proxy binaries from source
+- building the `pelicanbridge.so` plugin from source in the same Docker build
 - keeping the Go toolchain in the runtime image
 - copying `mt-multiserver-proxy`, `mt-auth-convert`, and `mt-build-plugin` into `/home/container` at startup
+- copying the bundled `pelicanbridge.so` into `/home/container/plugins` at startup
 - running the proxy from `/home/container`, so all proxy-managed state lands on the writable Pelican volume
 - using a Pelican-compatible entrypoint that reads `STARTUP`
 
@@ -31,12 +33,17 @@ If your repository or package name differs, update:
 
 ## Tags
 
-Because the source repository does not publish GitHub releases for this project, the workflow watches the tracked `main` branch and publishes:
+Because the source repositories do not publish GitHub releases for this project, the workflow watches the tracked `main` branches for both:
+
+- `fondazione-golinelli/mt-multiserver-proxy`
+- `fondazione-golinelli/mt-multiserver-proxy-pelican-bridge`
+
+When either one changes, the image is rebuilt and publishes:
 
 - `latest`
 - `main`
-- `<yyyyMMddHHmmss>-<12 char sha>`
-- `<12 char sha>`
+- `<yyyyMMddHHmmss>-<proxy 12 char sha>-<bridge 12 char sha>`
+- `<proxy 12 char sha>-<bridge 12 char sha>`
 
 ## Pelican Egg
 
@@ -52,7 +59,7 @@ If Pelican creates a server without an allocation and injects `SERVER_PORT=0`, t
 
 ## Automatic builds
 
-A GitHub Action checks daily for a new commit on `fondazione-golinelli/mt-multiserver-proxy:main`. When the commit changes, the image is rebuilt and pushed to GHCR. You can also trigger the workflow manually.
+A GitHub Action checks daily for new commits on both tracked source repos. When either commit changes, the image is rebuilt and pushed to GHCR. You can also trigger the workflow manually.
 
 ## Notes for your setup
 
