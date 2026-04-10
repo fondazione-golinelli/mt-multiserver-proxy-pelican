@@ -120,6 +120,20 @@
             "sort": 5
         },
         {
+            "name": "Force default server",
+            "description": "Always send reconnecting players to the default server instead of resuming the last upstream server they were on.",
+            "env_variable": "PROXY_FORCE_DEFAULT_SRV",
+            "default_value": "true",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "in:true,false"
+            ],
+            "sort": 6
+        },
+        {
             "name": "No auto plugins",
             "description": "Set true to disable automatic plugin builds from source directories in plugins/.",
             "env_variable": "PROXY_NO_AUTO_PLUGINS",
@@ -131,7 +145,7 @@
                 "string",
                 "in:true,false"
             ],
-            "sort": 6
+            "sort": 7
         },
         {
             "name": "No plugins",
@@ -145,7 +159,7 @@
                 "string",
                 "in:true,false"
             ],
-            "sort": 7
+            "sort": 8
         },
         {
             "name": "User limit",
@@ -160,7 +174,7 @@
                 "min:1",
                 "max:100000"
             ],
-            "sort": 8
+            "sort": 9
         },
         {
             "name": "Static server name",
@@ -174,7 +188,7 @@
                 "string",
                 "max:64"
             ],
-            "sort": 9
+            "sort": 10
         },
         {
             "name": "Static server addr",
@@ -188,7 +202,7 @@
                 "string",
                 "max:255"
             ],
-            "sort": 10
+            "sort": 11
         },
         {
             "name": "Static media pool",
@@ -202,7 +216,7 @@
                 "string",
                 "max:64"
             ],
-            "sort": 11
+            "sort": 12
         },
         {
             "name": "Static fallback",
@@ -216,7 +230,7 @@
                 "string",
                 "max:64"
             ],
-            "sort": 12
+            "sort": 13
         },
         {
             "name": "List enabled",

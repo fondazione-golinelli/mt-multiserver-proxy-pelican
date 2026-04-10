@@ -44,6 +44,10 @@ An egg configuration file is included in this repo: [egg-mt-multiserver-proxy.js
 
 The egg points the server startup command at `/home/container/mt-multiserver-proxy`. By default, the entrypoint now renders `config.json` from Pelican environment variables on each boot. Set `PROXY_MANAGE_CONFIG=false` if you want to maintain `config.json` manually.
 
+By default, the generated config also sets `ForceDefaultSrv=true`, so players
+who reconnect after a disconnect return to the configured default server first
+instead of being dropped back into the last minigame instance they were on.
+
 If Pelican creates a server without an allocation and injects `SERVER_PORT=0`, the entrypoint normalizes that back to the default internal bind port (`40000`) instead of allowing the proxy to bind a random ephemeral port.
 
 ## Automatic builds

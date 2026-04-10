@@ -87,6 +87,7 @@ ensure_proxy_config() {
 	server_port=$(int_or_default "${SERVER_PORT:-}" "40000")
 	user_limit=$(int_or_default "${PROXY_USER_LIMIT:-}" "100")
 	require_passwd=$(bool_to_json "${PROXY_REQUIRE_PASSWD:-false}")
+	force_default_srv=$(bool_to_json "${PROXY_FORCE_DEFAULT_SRV:-true}")
 	no_auto_plugins=$(bool_to_json "${PROXY_NO_AUTO_PLUGINS:-false}")
 	no_plugins=$(bool_to_json "${PROXY_NO_PLUGINS:-false}")
 	list_enable=$(bool_to_json "${PROXY_LIST_ENABLE:-false}")
@@ -119,6 +120,7 @@ ensure_proxy_config() {
 		--arg list_desc "$list_desc" \
 		--arg list_url "$list_url" \
 		--argjson require_passwd "$require_passwd" \
+		--argjson force_default_srv "$force_default_srv" \
 		--argjson no_auto_plugins "$no_auto_plugins" \
 		--argjson no_plugins "$no_plugins" \
 		--argjson user_limit "$user_limit" \
@@ -129,6 +131,7 @@ ensure_proxy_config() {
 			AuthPostgresConn: $auth_postgres_conn,
 			RequirePasswd: $require_passwd,
 			DefaultSrv: $default_server,
+			ForceDefaultSrv: $force_default_srv,
 			SrvSelector: $server_selector,
 			NoAutoPlugins: $no_auto_plugins,
 			NoPlugins: $no_plugins,
