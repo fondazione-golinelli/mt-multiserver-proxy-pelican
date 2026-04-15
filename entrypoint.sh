@@ -185,6 +185,8 @@ ensure_proxy_config
 
 cd /home/container || exit 1
 
+export GOPATH=/home/container/.cache/go
+
 PARSED=$(echo "$STARTUP" | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
 echo "container~ $PARSED"
