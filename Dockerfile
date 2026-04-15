@@ -15,11 +15,12 @@ RUN apt-get update && \
 	apt-get install -y --no-install-recommends ca-certificates git && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p "$GOBIN" && \
-	git clone "https://github.com/${MT_MULTISERVER_PROXY_REPO}.git" /tmp/mt-multiserver-proxy && \
-	cd /tmp/mt-multiserver-proxy && \
-	git checkout "${MT_MULTISERVER_PROXY_VERSION}" && \
-	go install ./cmd/...
+ENV GONOSUMCHECK=github.com/HimbeerserverDE/mt-multiserver-proxy
+ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
+
+RUN git config --global url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy" && \
+	mkdir -p "$GOBIN" && \
+	GOBIN="$GOBIN" go install github.com/HimbeerserverDE/mt-multiserver-proxy/cmd/...@${MT_MULTISERVER_PROXY_VERSION}
 
 FROM $GO_IMAGE AS runtime
 
