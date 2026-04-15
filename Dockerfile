@@ -31,6 +31,13 @@ RUN apt-get update && \
 
 WORKDIR /home/container
 
+ARG MT_MULTISERVER_PROXY_REPO
+
+ENV GONOSUMCHECK=github.com/HimbeerserverDE/mt-multiserver-proxy
+ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
+
+RUN git config --global url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy"
+
 COPY --from=builder /opt/mt-multiserver-proxy /usr/local/mt-multiserver-proxy
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
