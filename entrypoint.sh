@@ -187,6 +187,7 @@ cd /home/container || exit 1
 
 export GOPATH=/home/container/.cache/go
 export GOTMPDIR=/home/container/.cache/gotmp
+export GOFLAGS="-buildvcs=false"
 mkdir -p "$GOTMPDIR"
 
 PARSED=$(echo "$STARTUP" | sed -e 's/{{/${/g' -e 's/}}/}/g')
