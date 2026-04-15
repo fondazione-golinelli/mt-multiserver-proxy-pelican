@@ -14,7 +14,6 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   PROXY_UPSTREAM_REPO: fondazione-golinelli/mt-multiserver-proxy
-  BRIDGE_UPSTREAM_REPO: fondazione-golinelli/mt-multiserver-proxy-pelican-bridge
 
 jobs:
   check:
@@ -22,8 +21,6 @@ jobs:
     outputs:
       proxy_sha: ${{ steps.upstream.outputs.proxy_sha }}
       proxy_short_sha: ${{ steps.upstream.outputs.proxy_short_sha }}
-      bridge_sha: ${{ steps.upstream.outputs.bridge_sha }}
-      bridge_short_sha: ${{ steps.upstream.outputs.bridge_short_sha }}
       version_tag: ${{ steps.upstream.outputs.version_tag }}
       should_build: ${{ steps.upstream.outputs.should_build }}
     steps:
@@ -35,19 +32,11 @@ jobs:
           PROXY_SHORT_SHA=$(printf '%s' "$PROXY_SHA" | cut -c1-12)
           PROXY_COMMIT_DATE=$(echo "$PROXY_DATA" | jq -r '.commit.committer.date')
 
-          BRIDGE_DATA=$(curl -fsSL "https://api.github.com/repos/${{ env.BRIDGE_UPSTREAM_REPO }}/commits/main")
-          BRIDGE_SHA=$(echo "$BRIDGE_DATA" | jq -r '.sha')
-          BRIDGE_SHORT_SHA=$(printf '%s' "$BRIDGE_SHA" | cut -c1-12)
-          BRIDGE_COMMIT_DATE=$(echo "$BRIDGE_DATA" | jq -r '.commit.committer.date')
-
-          LATEST_COMMIT_DATE=$(printf '%s\n%s\n' "$PROXY_COMMIT_DATE" "$BRIDGE_COMMIT_DATE" | sort | tail -n1)
-          TIMESTAMP=$(date -u -d "$LATEST_COMMIT_DATE" +%Y%m%d%H%M%S)
-          VERSION_TAG="${TIMESTAMP}-${PROXY_SHORT_SHA}-${BRIDGE_SHORT_SHA}"
+          TIMESTAMP=$(date -u -d "$PROXY_COMMIT_DATE" +%Y%m%d%H%M%S)
+          VERSION_TAG="${TIMESTAMP}-${PROXY_SHORT_SHA}"
 
           echo "proxy_sha=${PROXY_SHA}" >> "$GITHUB_OUTPUT"
           echo "proxy_short_sha=${PROXY_SHORT_SHA}" >> "$GITHUB_OUTPUT"
-          echo "bridge_sha=${BRIDGE_SHA}" >> "$GITHUB_OUTPUT"
-          echo "bridge_short_sha=${BRIDGE_SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "version_tag=${VERSION_TAG}" >> "$GITHUB_OUTPUT"
 
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -89,12 +78,10 @@ jobs:
           build-args: |
             MT_MULTISERVER_PROXY_REPO=${{ env.PROXY_UPSTREAM_REPO }}
             MT_MULTISERVER_PROXY_VERSION=${{ needs.check.outputs.proxy_sha }}
-            MT_MULTISERVER_PROXY_PELICAN_BRIDGE_REPO=${{ env.BRIDGE_UPSTREAM_REPO }}
-            MT_MULTISERVER_PROXY_PELICAN_BRIDGE_VERSION=${{ needs.check.outputs.bridge_sha }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.check.outputs.version_tag }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.check.outputs.proxy_short_sha }}-${{ needs.check.outputs.bridge_short_sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.check.outputs.proxy_short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

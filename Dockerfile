@@ -33,7 +33,6 @@ RUN apt-get update && \
 WORKDIR /home/container
 
 COPY --from=builder /opt/mt-multiserver-proxy /usr/local/mt-multiserver-proxy
-COPY --from=builder /go/pkg/sumdb /go/pkg/sumdb
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
