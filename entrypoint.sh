@@ -44,11 +44,6 @@ copy_runtime_binaries() {
 	done
 
 	mkdir -p /home/container/plugins /home/container/auth /home/container/ban /home/container/cache
-	if [ -f /usr/local/mt-multiserver-proxy/plugins/pelicanbridge.so ]; then
-		install -m 0644 \
-			/usr/local/mt-multiserver-proxy/plugins/pelicanbridge.so \
-			/home/container/plugins/pelicanbridge.so
-	fi
 	: > /home/container/latest.log
 
 	if [ "$(id -u)" -eq 0 ]; then
@@ -61,8 +56,7 @@ copy_runtime_binaries() {
 			/home/container/latest.log \
 			/home/container/mt-multiserver-proxy \
 			/home/container/mt-auth-convert \
-			/home/container/mt-build-plugin \
-			/home/container/plugins/pelicanbridge.so 2>/dev/null || true
+			/home/container/mt-build-plugin 2>/dev/null || true
 	fi
 }
 
@@ -109,6 +103,14 @@ ensure_proxy_config() {
 	list_name="${PROXY_LIST_NAME:-Pelican Luanti Proxy}"
 	list_desc="${PROXY_LIST_DESC:-}"
 	list_url="${PROXY_LIST_URL:-}"
+	admin_users="${PROXY_ADMIN_USERS:-}"
+
+	# Build UserGroups and Groups JSON from PROXY_ADMIN_USERS (comma-separated)
+	user_groups="{}"
+	groups='{"admin":["server","*"],"default":[]}'
+	if [ -n "$admin_users" ]; then
+		user_groups=$(printf '%s' "$admin_users" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | jq -R -s 'split("\n") | map(select(length > 0)) | map({(.): "admin"}) | add // {}')
+	fi
 
 	tmp_config=/home/container/config.json.tmp
 
@@ -131,6 +133,8 @@ ensure_proxy_config() {
 		--argjson no_plugins "$no_plugins" \
 		--argjson user_limit "$user_limit" \
 		--argjson list_enable "$list_enable" \
+		--argjson user_groups "$user_groups" \
+		--argjson groups "$groups" \
 		'{
 			BindAddr: $bind_addr,
 			AuthBackend: $auth_backend,
@@ -142,6 +146,8 @@ ensure_proxy_config() {
 			NoAutoPlugins: $no_auto_plugins,
 			NoPlugins: $no_plugins,
 			UserLimit: $user_limit,
+			UserGroups: $user_groups,
+			Groups: $groups,
 			Servers: {
 				($static_server_name): {
 					Addr: $static_server_addr,
