@@ -3,24 +3,6 @@
 
 ARG GO_IMAGE=golang:1.25.6-bookworm
 ARG MT_MULTISERVER_PROXY_REPO=fondazione-golinelli/mt-multiserver-proxy
-ARG MT_MULTISERVER_PROXY_VERSION=main
-
-FROM $GO_IMAGE AS builder
-
-ARG MT_MULTISERVER_PROXY_REPO
-ARG MT_MULTISERVER_PROXY_VERSION
-ENV GOBIN=/opt/mt-multiserver-proxy
-
-RUN apt-get update && \
-	apt-get install -y --no-install-recommends ca-certificates git && \
-	rm -rf /var/lib/apt/lists/*
-
-ENV GONOSUMCHECK=github.com/HimbeerserverDE/mt-multiserver-proxy
-ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
-
-RUN git config --global url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy" && \
-	mkdir -p "$GOBIN" && \
-	GOBIN="$GOBIN" go install github.com/HimbeerserverDE/mt-multiserver-proxy/cmd/...@${MT_MULTISERVER_PROXY_VERSION}
 
 FROM $GO_IMAGE AS runtime
 
@@ -39,8 +21,6 @@ ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
 
 RUN git config --system url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy"
 
-COPY --from=builder /opt/mt-multiserver-proxy /usr/local/mt-multiserver-proxy
-COPY --from=builder /root/.cache/go-build /usr/local/mt-multiserver-proxy/.go-build-cache
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

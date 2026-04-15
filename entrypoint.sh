@@ -36,28 +36,47 @@ int_or_default() {
 	esac
 }
 
-copy_runtime_binaries() {
-	mkdir -p /home/container
+setup_go_env() {
+	export GOPATH=/home/container/.cache/go
+	export GOCACHE=/home/container/.cache/go-build
+	export GOTMPDIR=/home/container/.cache/gotmp
+	export GOFLAGS="-buildvcs=false"
+	mkdir -p "$GOPATH" "$GOCACHE" "$GOTMPDIR"
+}
 
+build_proxy_binaries() {
+	PROXY_MODULE="github.com/HimbeerserverDE/mt-multiserver-proxy"
+	PROXY_BIN_DIR=/home/container/.cache/gobin
+
+	# Detect what version to build
+	PROXY_VERSION="${PROXY_PROXY_VERSION:-}"
+	if [ -z "$PROXY_VERSION" ]; then
+		PROXY_VERSION="latest"
+	fi
+
+	mkdir -p "$PROXY_BIN_DIR"
+	export GOBIN="$PROXY_BIN_DIR"
+
+	# Check if binaries already cached for this version
+	if [ -f "$PROXY_BIN_DIR/.version" ] && [ "$(cat "$PROXY_BIN_DIR/.version")" = "$PROXY_VERSION" ] && [ -f "$PROXY_BIN_DIR/mt-multiserver-proxy" ]; then
+		echo "proxy binaries cached for $PROXY_VERSION"
+	else
+		echo "building proxy binaries @ $PROXY_VERSION ..."
+		go install "${PROXY_MODULE}/cmd/..."@"${PROXY_VERSION}"
+		printf '%s' "$PROXY_VERSION" > "$PROXY_BIN_DIR/.version"
+		echo "proxy binaries built"
+	fi
+
+	# Symlink/copy to working directory
 	for bin in mt-multiserver-proxy mt-auth-convert mt-build-plugin; do
-		install -m 0755 "/usr/local/mt-multiserver-proxy/$bin" "/home/container/$bin"
+		if [ -f "$PROXY_BIN_DIR/$bin" ]; then
+			cp -f "$PROXY_BIN_DIR/$bin" "/home/container/$bin"
+			chmod 0755 "/home/container/$bin"
+		fi
 	done
 
 	mkdir -p /home/container/plugins /home/container/auth /home/container/ban /home/container/cache
 	: > /home/container/latest.log
-
-	if [ "$(id -u)" -eq 0 ]; then
-		chown container:container \
-			/home/container \
-			/home/container/auth \
-			/home/container/ban \
-			/home/container/cache \
-			/home/container/plugins \
-			/home/container/latest.log \
-			/home/container/mt-multiserver-proxy \
-			/home/container/mt-auth-convert \
-			/home/container/mt-build-plugin 2>/dev/null || true
-	fi
 }
 
 ensure_startup_command() {
@@ -173,27 +192,14 @@ ensure_proxy_config() {
 		}' > "$tmp_config"
 
 	mv "$tmp_config" /home/container/config.json
-
-	if [ "$(id -u)" -eq 0 ]; then
-		chown container:container /home/container/config.json 2>/dev/null || true
-	fi
 }
 
-copy_runtime_binaries
+setup_go_env
+build_proxy_binaries
 ensure_startup_command
 ensure_proxy_config
 
 cd /home/container || exit 1
-
-export GOPATH=/home/container/.cache/go
-export GOCACHE=/home/container/.cache/go-build
-export GOTMPDIR=/home/container/.cache/gotmp
-export GOFLAGS="-buildvcs=false"
-mkdir -p "$GOTMPDIR" "$GOCACHE"
-if [ -d /usr/local/mt-multiserver-proxy/.go-build-cache ] && [ ! -f "$GOCACHE/.seeded" ]; then
-	cp -a /usr/local/mt-multiserver-proxy/.go-build-cache/. "$GOCACHE/"
-	touch "$GOCACHE/.seeded"
-fi
 
 PARSED=$(echo "$STARTUP" | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
