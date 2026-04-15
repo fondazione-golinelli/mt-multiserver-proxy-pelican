@@ -12,15 +12,14 @@ ARG MT_MULTISERVER_PROXY_VERSION
 ENV GOBIN=/opt/mt-multiserver-proxy
 
 RUN apt-get update && \
-	apt-get install -y --no-install-recommends ca-certificates curl && \
+	apt-get install -y --no-install-recommends ca-certificates git && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p "$GOBIN" /tmp/mt-multiserver-proxy && \
-	curl -fsSL "https://codeload.github.com/${MT_MULTISERVER_PROXY_REPO}/tar.gz/${MT_MULTISERVER_PROXY_VERSION}" \
-		-o /tmp/mt-multiserver-proxy/source.tar.gz && \
-	tar -xzf /tmp/mt-multiserver-proxy/source.tar.gz -C /tmp/mt-multiserver-proxy --strip-components=1 && \
+RUN mkdir -p "$GOBIN" && \
+	git clone "https://github.com/${MT_MULTISERVER_PROXY_REPO}.git" /tmp/mt-multiserver-proxy && \
 	cd /tmp/mt-multiserver-proxy && \
-	go install -buildvcs=false ./cmd/...
+	git checkout "${MT_MULTISERVER_PROXY_VERSION}" && \
+	go install ./cmd/...
 
 FROM $GO_IMAGE AS runtime
 
