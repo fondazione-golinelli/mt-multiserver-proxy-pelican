@@ -40,6 +40,7 @@ ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
 RUN git config --system url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy"
 
 COPY --from=builder /opt/mt-multiserver-proxy /usr/local/mt-multiserver-proxy
+COPY --from=builder /root/.cache/go-build /usr/local/mt-multiserver-proxy/.go-build-cache
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

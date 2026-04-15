@@ -186,9 +186,14 @@ ensure_proxy_config
 cd /home/container || exit 1
 
 export GOPATH=/home/container/.cache/go
+export GOCACHE=/home/container/.cache/go-build
 export GOTMPDIR=/home/container/.cache/gotmp
 export GOFLAGS="-buildvcs=false"
-mkdir -p "$GOTMPDIR"
+mkdir -p "$GOTMPDIR" "$GOCACHE"
+if [ -d /usr/local/mt-multiserver-proxy/.go-build-cache ] && [ ! -f "$GOCACHE/.seeded" ]; then
+	cp -a /usr/local/mt-multiserver-proxy/.go-build-cache/. "$GOCACHE/"
+	touch "$GOCACHE/.seeded"
+fi
 
 PARSED=$(echo "$STARTUP" | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
