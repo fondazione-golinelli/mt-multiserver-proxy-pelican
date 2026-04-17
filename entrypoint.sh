@@ -40,6 +40,9 @@ setup_go_env() {
 	export GOPATH=/home/container/.cache/go
 	export GOCACHE=/home/container/.cache/go-build
 	export GOTMPDIR=/home/container/.cache/gotmp
+	# cmd/link ignores GOTMPDIR and uses TMPDIR; container /tmp is a small
+	# tmpfs that can't hold the linker's intermediate object files.
+	export TMPDIR=/home/container/.cache/gotmp
 	export GOFLAGS="-buildvcs=false"
 	mkdir -p "$GOPATH" "$GOCACHE" "$GOTMPDIR"
 }
