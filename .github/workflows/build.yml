@@ -1,6 +1,8 @@
 name: Build and publish mt-multiserver-proxy Pelican image
 
 on:
+  push:
+    branches: [ main ]
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
@@ -35,19 +37,25 @@ jobs:
           TIMESTAMP=$(date -u -d "$PROXY_COMMIT_DATE" +%Y%m%d%H%M%S)
           VERSION_TAG="${TIMESTAMP}-${PROXY_SHORT_SHA}"
 
-          echo "proxy_sha=${PROXY_SHA}" >> "$GITHUB_OUTPUT"
-          echo "proxy_short_sha=${PROXY_SHORT_SHA}" >> "$GITHUB_OUTPUT"
-          echo "version_tag=${VERSION_TAG}" >> "$GITHUB_OUTPUT"
+          {
+            echo "proxy_sha=${PROXY_SHA}"
+            echo "proxy_short_sha=${PROXY_SHORT_SHA}"
+            echo "version_tag=${VERSION_TAG}"
+          } >> "$GITHUB_OUTPUT"
 
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "${{ env.REGISTRY }}/v2/${{ env.IMAGE_NAME }}/manifests/${VERSION_TAG}")
 
-          if [ "$STATUS" = "200" ] && [ "${{ inputs.force_build || false }}" != "true" ]; then
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.force_build || false }}" = "true" ]; then
+            SHOULD_BUILD=true
+          elif [ "$STATUS" = "200" ]; then
+            SHOULD_BUILD=false
           else
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            SHOULD_BUILD=true
           fi
+
+          echo "should_build=${SHOULD_BUILD}" >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest

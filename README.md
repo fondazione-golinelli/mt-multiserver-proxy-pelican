@@ -33,17 +33,21 @@ If your repository or package name differs, update:
 
 ## Tags
 
-Because the source repositories do not publish GitHub releases for this project, the workflow watches the tracked `main` branches for both:
+Because the source repository does not publish GitHub releases for this project, the workflow watches the tracked `main` branch for:
 
 - `fondazione-golinelli/mt-multiserver-proxy`
-- `fondazione-golinelli/mt-multiserver-proxy-pelican-bridge`
 
-When either one changes, the image is rebuilt and publishes:
+When it changes, the image is rebuilt with that proxy commit as the default runtime build version and publishes:
 
 - `latest`
 - `main`
-- `<yyyyMMddHHmmss>-<proxy 12 char sha>-<bridge 12 char sha>`
-- `<proxy 12 char sha>-<bridge 12 char sha>`
+- `<yyyyMMddHHmmss>-<proxy 12 char sha>`
+- `<proxy 12 char sha>`
+
+The entrypoint stores proxy binaries on the Pelican server volume. Pinning the
+workflow-resolved proxy commit in the image makes existing volumes rebuild their
+cached binaries after an image update, instead of treating every rebuild as the
+same `latest` cache entry.
 
 ## Pelican Egg
 

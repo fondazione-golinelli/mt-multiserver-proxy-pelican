@@ -3,6 +3,7 @@
 
 ARG GO_IMAGE=golang:1.25.6-bookworm
 ARG MT_MULTISERVER_PROXY_REPO=fondazione-golinelli/mt-multiserver-proxy
+ARG MT_MULTISERVER_PROXY_VERSION=latest
 
 FROM $GO_IMAGE AS runtime
 
@@ -15,10 +16,12 @@ RUN apt-get update && \
 WORKDIR /home/container
 
 ARG MT_MULTISERVER_PROXY_REPO
+ARG MT_MULTISERVER_PROXY_VERSION
 
 ENV GONOSUMCHECK=github.com/HimbeerserverDE/mt-multiserver-proxy
 ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
 ENV GOPRIVATE=github.com/HimbeerserverDE/mt-multiserver-proxy
+ENV PROXY_PROXY_VERSION=${MT_MULTISERVER_PROXY_VERSION}
 
 RUN git config --system url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy"
 
