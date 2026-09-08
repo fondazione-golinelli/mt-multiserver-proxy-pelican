@@ -60,8 +60,15 @@ build_proxy_binaries() {
 	mkdir -p "$PROXY_BIN_DIR"
 	export GOBIN="$PROXY_BIN_DIR"
 
-	# Check if binaries already cached for this version
-	if [ -f "$PROXY_BIN_DIR/.version" ] && [ "$(cat "$PROXY_BIN_DIR/.version")" = "$PROXY_VERSION" ] && [ -f "$PROXY_BIN_DIR/mt-multiserver-proxy" ]; then
+	# Image binaries are built with this image's Go toolchain. Prefer them over
+	# persisted binaries compiled by an older image, even at the same proxy SHA.
+	if [ -x /opt/proxy/bin/mt-multiserver-proxy ] && [ "$(cat /opt/proxy/version)" = "$PROXY_VERSION" ]; then
+		for bin in mt-multiserver-proxy mt-auth-convert mt-build-plugin; do
+			cp -f "/opt/proxy/bin/$bin" "$PROXY_BIN_DIR/$bin"
+		done
+		printf '%s' "$PROXY_VERSION" > "$PROXY_BIN_DIR/.version"
+		echo "using proxy binaries bundled with the image"
+	elif [ -f "$PROXY_BIN_DIR/.version" ] && [ "$(cat "$PROXY_BIN_DIR/.version")" = "$PROXY_VERSION" ] && [ -f "$PROXY_BIN_DIR/mt-multiserver-proxy" ]; then
 		echo "proxy binaries cached for $PROXY_VERSION"
 	else
 		echo "building proxy binaries @ $PROXY_VERSION ..."

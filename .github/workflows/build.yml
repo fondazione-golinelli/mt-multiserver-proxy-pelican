@@ -12,6 +12,14 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: proxy-pelican-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: read
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -23,39 +31,16 @@ jobs:
     outputs:
       proxy_sha: ${{ steps.upstream.outputs.proxy_sha }}
       proxy_short_sha: ${{ steps.upstream.outputs.proxy_short_sha }}
-      version_tag: ${{ steps.upstream.outputs.version_tag }}
+      marker: ${{ steps.upstream.outputs.marker }}
       should_build: ${{ steps.upstream.outputs.should_build }}
     steps:
-      - name: Query upstream main commits
+      - uses: actions/checkout@v4
+      - name: Check published proxy and wrapper versions
         id: upstream
-        run: |
-          PROXY_DATA=$(curl -fsSL "https://api.github.com/repos/${{ env.PROXY_UPSTREAM_REPO }}/commits/main")
-          PROXY_SHA=$(echo "$PROXY_DATA" | jq -r '.sha')
-          PROXY_SHORT_SHA=$(printf '%s' "$PROXY_SHA" | cut -c1-12)
-          PROXY_COMMIT_DATE=$(echo "$PROXY_DATA" | jq -r '.commit.committer.date')
-
-          TIMESTAMP=$(date -u -d "$PROXY_COMMIT_DATE" +%Y%m%d%H%M%S)
-          VERSION_TAG="${TIMESTAMP}-${PROXY_SHORT_SHA}"
-
-          {
-            echo "proxy_sha=${PROXY_SHA}"
-            echo "proxy_short_sha=${PROXY_SHORT_SHA}"
-            echo "version_tag=${VERSION_TAG}"
-          } >> "$GITHUB_OUTPUT"
-
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "${{ env.REGISTRY }}/v2/${{ env.IMAGE_NAME }}/manifests/${VERSION_TAG}")
-
-          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.force_build || false }}" = "true" ]; then
-            SHOULD_BUILD=true
-          elif [ "$STATUS" = "200" ]; then
-            SHOULD_BUILD=false
-          else
-            SHOULD_BUILD=true
-          fi
-
-          echo "should_build=${SHOULD_BUILD}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE_BUILD: ${{ inputs.force_build || false }}
+        run: bash check-image.sh
 
   build:
     runs-on: ubuntu-latest
@@ -89,7 +74,7 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.check.outputs.version_tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.check.outputs.marker }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.check.outputs.proxy_short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

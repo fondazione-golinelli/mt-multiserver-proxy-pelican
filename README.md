@@ -12,11 +12,10 @@ The maintained proxy image source is not a great fit for Pelican as-is:
 
 This image solves that by:
 
-- building the proxy binaries from source
-- building the `pelicanbridge.so` plugin from source in the same Docker build
+- building the proxy binaries from a pinned fork commit during the Docker build
 - keeping the Go toolchain in the runtime image
 - copying `mt-multiserver-proxy`, `mt-auth-convert`, and `mt-build-plugin` into `/home/container` at startup
-- copying the bundled `pelicanbridge.so` into `/home/container/plugins` at startup
+- building mounted plugins against the running proxy with the same Go toolchain
 - running the proxy from `/home/container`, so all proxy-managed state lands on the writable Pelican volume
 - using a Pelican-compatible entrypoint that reads `STARTUP`
 
@@ -41,13 +40,13 @@ When it changes, the image is rebuilt with that proxy commit as the default runt
 
 - `latest`
 - `main`
-- `<yyyyMMddHHmmss>-<proxy 12 char sha>`
+- `build-<hash of proxy commit and wrapper commit>`
 - `<proxy 12 char sha>`
 
-The entrypoint stores proxy binaries on the Pelican server volume. Pinning the
-workflow-resolved proxy commit in the image makes existing volumes rebuild their
-cached binaries after an image update, instead of treating every rebuild as the
-same `latest` cache entry.
+The entrypoint copies the image's compiled binaries onto the server volume on
+startup, replacing any binaries cached by an older toolchain. An explicit
+PROXY_PROXY_VERSION override can still request a runtime build of another version.
+Go remains installed for automatic builds of mounted plugins.
 
 ## Pelican Egg
 
@@ -63,7 +62,15 @@ If Pelican creates a server without an allocation and injects `SERVER_PORT=0`, t
 
 ## Automatic builds
 
-A GitHub Action checks daily for new commits on both tracked source repos. When either commit changes, the image is rebuilt and pushed to GHCR. You can also trigger the workflow manually.
+A GitHub Action checks daily for changes to the proxy fork. A push to this wrapper
+also triggers a check. The build is skipped when the same proxy and wrapper
+commits have already been published. Registry authentication/rate-limit errors
+fail the check rather than being treated as missing images. Manual dispatch can
+force a rebuild. Compilation failures now fail CI before an image is published.
+
+The current toolchain is Go 1.26.6 and the proxy tracks Luanti 5.17. Existing
+gameplay fixes are retained. After an image update, allow automatic plugin builds
+to complete and check logs for `load auto plugin` before testing classroom actions.
 
 ## Notes for your setup
 
