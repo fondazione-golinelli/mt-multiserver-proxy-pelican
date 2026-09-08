@@ -22,6 +22,7 @@ ENV GONOSUMCHECK=github.com/HimbeerserverDE/mt-multiserver-proxy
 ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
 ENV GOPRIVATE=github.com/HimbeerserverDE/mt-multiserver-proxy
 ENV PROXY_PROXY_VERSION=${MT_MULTISERVER_PROXY_VERSION}
+ENV GOFLAGS=-trimpath
 
 RUN git config --system url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy"
 

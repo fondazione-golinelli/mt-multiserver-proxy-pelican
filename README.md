@@ -47,6 +47,12 @@ The entrypoint copies the image's compiled binaries onto the server volume on
 startup, replacing any binaries cached by an older toolchain. An explicit
 PROXY_PROXY_VERSION override can still request a runtime build of another version.
 Go remains installed for automatic builds of mounted plugins.
+Both image and plugin compilation use `-trimpath` so different module-cache
+directories do not produce incompatible Go package hashes. CI loads a runtime
+compiled smoke plugin before publishing, rather than only checking compilation.
+
+The proxy egg stop value is `^SIGTERM`. Update older eggs that use `^term`:
+Wings does not recognize that shorthand and falls back to SIGKILL.
 
 ## Pelican Egg
 

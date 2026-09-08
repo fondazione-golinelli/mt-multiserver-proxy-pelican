@@ -63,6 +63,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build image for runtime verification
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: skyss-proxy-ci:validation
+          build-args: |
+            MT_MULTISERVER_PROXY_REPO=${{ env.PROXY_UPSTREAM_REPO }}
+            MT_MULTISERVER_PROXY_VERSION=${{ needs.check.outputs.proxy_sha }}
+          cache-from: type=gha
+
+      - name: Verify runtime plugin compatibility
+        run: bash test-plugin-load.sh skyss-proxy-ci:validation
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:

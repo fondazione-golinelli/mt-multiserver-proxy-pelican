@@ -43,7 +43,9 @@ setup_go_env() {
 	# cmd/link ignores GOTMPDIR and uses TMPDIR; container /tmp is a small
 	# tmpfs that can't hold the linker's intermediate object files.
 	export TMPDIR=/home/container/.cache/gotmp
-	export GOFLAGS="-buildvcs=false"
+	# Go plugins require matching package hashes. Strip build-machine paths
+	# from both the image binaries and runtime-compiled plugins.
+	export GOFLAGS="-buildvcs=false -trimpath"
 	mkdir -p "$GOPATH" "$GOCACHE" "$GOTMPDIR"
 }
 
