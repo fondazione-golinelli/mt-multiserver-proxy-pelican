@@ -287,6 +287,49 @@
                 "max:255"
             ],
             "sort": 16
+        },
+        {
+            "name": "List address",
+            "description": "Hostname or IP players connect to, sent in server list announcements. It must resolve to the IP the proxy announces from. Leave empty to let the list server use that IP.",
+            "env_variable": "PROXY_LIST_ADDRESS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "max:255"
+            ],
+            "sort": 17
+        },
+        {
+            "name": "List port",
+            "description": "Port players connect to, sent in server list announcements. 0 uses the server port.",
+            "env_variable": "PROXY_LIST_PORT",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "integer",
+                "min:0",
+                "max:65535"
+            ],
+            "sort": 18
+        },
+        {
+            "name": "List game",
+            "description": "Game ID shown in server list announcements, for example mineclonia.",
+            "env_variable": "PROXY_LIST_GAME",
+            "default_value": "luanti",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:64"
+            ],
+            "sort": 19
         }
     ]
 }

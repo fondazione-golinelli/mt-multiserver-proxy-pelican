@@ -134,6 +134,9 @@ ensure_proxy_config() {
 	list_name="${PROXY_LIST_NAME:-Pelican Luanti Proxy}"
 	list_desc="${PROXY_LIST_DESC:-}"
 	list_url="${PROXY_LIST_URL:-}"
+	list_address="${PROXY_LIST_ADDRESS:-}"
+	list_port=$(int_or_default "${PROXY_LIST_PORT:-}" "0")
+	list_game="${PROXY_LIST_GAME:-luanti}"
 	admin_users="${PROXY_ADMIN_USERS:-}"
 
 	# Build UserGroups and Groups JSON from PROXY_ADMIN_USERS (comma-separated)
@@ -158,6 +161,9 @@ ensure_proxy_config() {
 		--arg list_name "$list_name" \
 		--arg list_desc "$list_desc" \
 		--arg list_url "$list_url" \
+		--arg list_address "$list_address" \
+		--arg list_game "$list_game" \
+		--argjson list_port "$list_port" \
 		--argjson require_passwd "$require_passwd" \
 		--argjson force_default_srv "$force_default_srv" \
 		--argjson no_auto_plugins "$no_auto_plugins" \
@@ -191,13 +197,15 @@ ensure_proxy_config() {
 				Enable: $list_enable,
 				Addr: "https://servers.luanti.org",
 				Interval: 300,
+				Address: $list_address,
+				Port: $list_port,
 				Name: $list_name,
 				Desc: $list_desc,
 				URL: $list_url,
 				Creative: false,
 				Dmg: true,
 				PvP: false,
-				Game: "luanti",
+				Game: $list_game,
 				FarNames: true,
 				Mods: []
 			}
