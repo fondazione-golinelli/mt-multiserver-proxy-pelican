@@ -195,14 +195,14 @@ ensure_proxy_config() {
 			UserLimit: $user_limit,
 			UserGroups: $user_groups,
 			Groups: $groups,
-			Servers: {
+			Servers: ({
 				($static_server_name): {
 					Addr: $static_server_addr,
 					MediaPool: $static_media_pool,
 					Fallback: $static_fallback,
 					Groups: []
 				}
-			} + $extra_servers,
+			} + $extra_servers),
 			List: {
 				Enable: $list_enable,
 				Addr: "https://servers.luanti.org",
