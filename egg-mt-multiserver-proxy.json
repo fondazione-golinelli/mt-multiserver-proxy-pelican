@@ -219,6 +219,20 @@
             "sort": 12
         },
         {
+            "name": "Extra servers",
+            "description": "More static servers, comma-separated, as name@pool or name=host:port@pool. The address defaults to name:30000. Use this for a static member of every media pool that dynamic instances use.",
+            "env_variable": "PROXY_EXTRA_SERVERS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "max:1024"
+            ],
+            "sort": 20
+        },
+        {
             "name": "Static fallback",
             "description": "Optional fallback server name for the bootstrap server.",
             "env_variable": "PROXY_STATIC_FALLBACK",
@@ -330,6 +344,20 @@
                 "max:64"
             ],
             "sort": 19
+        },
+        {
+            "name": "Admin users",
+            "description": "Comma-separated player names put in the admin group (all proxy permissions).",
+            "env_variable": "PROXY_ADMIN_USERS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "max:1024"
+            ],
+            "sort": 21
         }
     ]
 }

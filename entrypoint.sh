@@ -138,6 +138,7 @@ ensure_proxy_config() {
 	list_port=$(int_or_default "${PROXY_LIST_PORT:-}" "0")
 	list_game="${PROXY_LIST_GAME:-luanti}"
 	admin_users="${PROXY_ADMIN_USERS:-}"
+	extra_servers_spec="${PROXY_EXTRA_SERVERS:-}"
 
 	# Build UserGroups and Groups JSON from PROXY_ADMIN_USERS (comma-separated)
 	user_groups="{}"
@@ -145,6 +146,14 @@ ensure_proxy_config() {
 	if [ -n "$admin_users" ]; then
 		user_groups=$(printf '%s' "$admin_users" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | jq -R -s 'split("\n") | map(select(length > 0)) | map({(.): "admin"}) | add // {}')
 	fi
+
+	# Extra static servers from PROXY_EXTRA_SERVERS: comma-separated
+	# name@pool or name=host:port@pool entries; the address defaults to name:30000.
+	extra_servers=$(printf '%s' "$extra_servers_spec" | jq -R -s '
+		split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))
+		| map(split("@") as [$srv, $pool] | ($srv | split("=")) as [$name, $addr]
+			| {($name): {Addr: ($addr // ($name + ":30000")), MediaPool: ($pool // $name), Fallback: "", Groups: []}})
+		| add // {}')
 
 	tmp_config=/home/container/config.json.tmp
 
@@ -172,6 +181,7 @@ ensure_proxy_config() {
 		--argjson list_enable "$list_enable" \
 		--argjson user_groups "$user_groups" \
 		--argjson groups "$groups" \
+		--argjson extra_servers "$extra_servers" \
 		'{
 			BindAddr: $bind_addr,
 			AuthBackend: $auth_backend,
@@ -192,7 +202,7 @@ ensure_proxy_config() {
 					Fallback: $static_fallback,
 					Groups: []
 				}
-			},
+			} + $extra_servers,
 			List: {
 				Enable: $list_enable,
 				Addr: "https://servers.luanti.org",
