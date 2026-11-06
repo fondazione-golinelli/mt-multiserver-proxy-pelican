@@ -74,7 +74,8 @@ commits have already been published. Registry authentication/rate-limit errors
 fail the check rather than being treated as missing images. Manual dispatch can
 force a rebuild. Compilation failures now fail CI before an image is published.
 
-The current toolchain is Go 1.26.6 and the proxy tracks Luanti 5.17. Existing
+The current toolchain is Go 1.26.6 and the proxy tracks Luanti 5.18 (protocol
+54), including the updated lighting and active-object position packets. Existing
 gameplay fixes are retained. After an image update, allow automatic plugin builds
 to complete and check logs for `load auto plugin` before testing classroom actions.
 
