@@ -31,8 +31,17 @@ RUN git config --system url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".in
 RUN git clone --quiet https://github.com/HimbeerserverDE/mt-multiserver-proxy /opt/proxy/source && \
     git -C /opt/proxy/source checkout --quiet "${MT_MULTISERVER_PROXY_VERSION}"
 WORKDIR /opt/proxy/source
-RUN GOBIN=/opt/proxy/bin go install \
-    -ldflags "-X github.com/HimbeerserverDE/mt-multiserver-proxy.buildVersion=${MT_MULTISERVER_PROXY_VERSION}" ./cmd/... && \
+RUN mkdir -p /opt/proxy/build
+WORKDIR /opt/proxy/build
+RUN printf '%s\n' \
+      'module skyss.local/proxy-build' \
+      'go 1.24' \
+      'require github.com/HimbeerserverDE/mt-multiserver-proxy v0.0.0' \
+      'replace github.com/HimbeerserverDE/mt-multiserver-proxy => /opt/proxy/source' \
+      'replace github.com/HimbeerserverDE/mt => /opt/proxy/source/third_party/mt' > go.mod && \
+    GOBIN=/opt/proxy/bin go install -mod=mod \
+      -ldflags "-X github.com/HimbeerserverDE/mt-multiserver-proxy.buildVersion=${MT_MULTISERVER_PROXY_VERSION}" \
+      github.com/HimbeerserverDE/mt-multiserver-proxy/cmd/... && \
     printf '%s' "${MT_MULTISERVER_PROXY_VERSION}" > /opt/proxy/version
 
 WORKDIR /home/container
