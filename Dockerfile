@@ -23,13 +23,19 @@ ENV GONOSUMDB=github.com/HimbeerserverDE/mt-multiserver-proxy
 ENV GOPRIVATE=github.com/HimbeerserverDE/mt-multiserver-proxy
 ENV PROXY_PROXY_VERSION=${MT_MULTISERVER_PROXY_VERSION}
 ENV GOFLAGS=-trimpath
+ENV PROXY_SOURCE_DIR=/opt/proxy/source
 
 RUN git config --system url."https://github.com/${MT_MULTISERVER_PROXY_REPO}".insteadOf "https://github.com/HimbeerserverDE/mt-multiserver-proxy"
 
-# Compile during CI, so an image cannot publish with an unbuildable proxy.
+# Compile the pinned checkout so its local protocol module replacement is used.
+RUN git clone --quiet https://github.com/HimbeerserverDE/mt-multiserver-proxy /opt/proxy/source && \
+    git -C /opt/proxy/source checkout --quiet "${MT_MULTISERVER_PROXY_VERSION}"
+WORKDIR /opt/proxy/source
 RUN GOBIN=/opt/proxy/bin go install \
-    github.com/HimbeerserverDE/mt-multiserver-proxy/cmd/...@${MT_MULTISERVER_PROXY_VERSION} && \
+    -ldflags "-X github.com/HimbeerserverDE/mt-multiserver-proxy.buildVersion=${MT_MULTISERVER_PROXY_VERSION}" ./cmd/... && \
     printf '%s' "${MT_MULTISERVER_PROXY_VERSION}" > /opt/proxy/version
+
+WORKDIR /home/container
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
